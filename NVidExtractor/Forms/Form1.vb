@@ -104,18 +104,19 @@ Public Class Form1
                 ctrl.PauseDown()
             Next
 
+            LogForm.addLog("다운로드 타이머 정지됨")
             DownStartBT.Text = "다운로드 시작"
         Else
             downStarted = True
 
             For Each ctrl As ItemPanel In ListPanel.Controls
-                If Not ctrl.WC.IsBusy And ctrl.Paused And ctrl.DownBegan Then
+                If Not ctrl.WC.IsBusy And ctrl.Paused And ctrl.DownBegan And Not ctrl.DownFinished Then
                     ctrl.ResumeDown()
                 End If
             Next
 
             DownCheckTimer.Start()
-
+            LogForm.addLog("다운로드 타이머 시작됨")
             DownStartBT.Text = "일시 정지"
         End If
     End Sub
@@ -159,6 +160,7 @@ Public Class Form1
         For Each ctrl As ItemPanel In ListPanel.Controls
             '이미 시작하면 변경 못함
             If ctrl.Selected And Not ctrl.WC.IsBusy And Not ctrl.DownBegan Then
+                LogForm.addLog("일괄 다운로드 설정적용 (" + ctrl.Name + ")")
                 ctrl.DownQuality = quality
                 ctrl.DownMode = downmode
                 ctrl.DownloadLoc = saveLocation
@@ -205,6 +207,7 @@ Public Class Form1
             Next
 
             For Each n As String In killlist
+                LogForm.addLog("완료 다운로드 삭제 (" + n + ")")
                 ListPanel.Controls.RemoveByKey(n)
             Next
         End If
@@ -225,6 +228,7 @@ Public Class Form1
             Next
 
             For Each n As String In killlist
+                LogForm.addLog("일괄 다운로드 삭제 (" + n + ")")
                 ListPanel.Controls.RemoveByKey(n)
             Next
         End If
@@ -267,8 +271,8 @@ Public Class Form1
         Dim unfinished = 0
 
         For Each ctrl As ItemPanel In ListPanel.Controls
-            '시작은 했는데 끝을 못본 놈이 있으면
-            If ctrl.WC.IsBusy Or (ctrl.DownBegan And Not ctrl.DownFinished) Then
+            '시작은 했는데 끝을 못본 놈이 있으면 (그리고 오류도 아님)
+            If ctrl.WC.IsBusy Or (ctrl.DownBegan And Not ctrl.DownFinished And Not ctrl.progMode = "error") Then
                 busycount += 1
             End If
 

@@ -13,8 +13,8 @@ Public Class ItemPanel
     Public Selected As Boolean = False
     Public DownBegan As Boolean = False '다운로드를 한번이라도 시작을 했는지
     Public DownFinished As Boolean = False '다운로드를 완료한 상태인지
+    Public progMode As String = "" '현재 프로그램의 모드 (downloading, pause, finished, error)
     Dim captionDownFinished As Boolean = False '자막 다운로드를 완료한 상태인지
-    Dim progMode As String = ""
 
     Dim prevCBSelect() As Integer = {-1, -1} '비디오 info 리셋할때 콤보박스 선택을 보존하기 위해서
 
@@ -168,6 +168,7 @@ Public Class ItemPanel
             ProgPanelOver.BackColor = MainPanel.BackColor
             ProgLabel1.Text = ""
             ProgLabel2.Text = ""
+            PauseResumeBT.Visible = False
         End If
     End Sub
 
@@ -320,14 +321,21 @@ Public Class ItemPanel
 #Region "다운로드 작업"
 
     Private Sub DownloadProgressChanged(ByVal sender As Object, ByVal e As FileDownloadProgressChangedEventArgs) Handles WC.DownloadProgressChanged
-        progMode = "downloading"
-        SetProgBar(e.ProgressPercentage.ToString _
-                   + "% (" + FormatBytes(e.DownloadSpeedBytesPerSec) + "/s, " _
-                   + FormatBytes(e.BytesReceived) + "/" + FormatBytes(e.TotalBytesToReceive) _
-                   + ", " + DaysCalc(e.RemainingTimeSeconds) + " 남음)")
-        progPercent = e.ProgressPercentage
+        If e.ProgressPercentage >= 0 Then
+            progMode = "downloading"
+            SetProgBar(e.ProgressPercentage.ToString _
+                       + "% (" + FormatBytes(e.DownloadSpeedBytesPerSec) + "/s, " _
+                       + FormatBytes(e.BytesReceived) + "/" + FormatBytes(e.TotalBytesToReceive) _
+                       + ", " + DaysCalc(e.RemainingTimeSeconds) + " 남음)")
+            progPercent = e.ProgressPercentage
 
-        ProgPanelOver.Width = (e.ProgressPercentage / 100) * ProgPanel.Width
+            ProgPanelOver.Width = (e.ProgressPercentage / 100) * ProgPanel.Width
+        Else '다운로드 퍼센트값이 음수면 -> 비정상적인 다운로드
+            WC.CancelAsync()
+            progMode = "downloading"
+            forceReset(True)
+            SetProgBar("다운로드를 재시작하는 중...")
+        End If
     End Sub
 
     Public Sub StartDownload()
@@ -479,11 +487,13 @@ Public Class ItemPanel
     End Sub
 
     Public Sub PauseDown()
+        LogForm.addLog("다운로드 일시정지 (" + Name + ")")
         Paused = True
         WC.CancelAsync()
     End Sub
 
     Public Sub ResumeDown()
+        LogForm.addLog("다운로드 재개 (" + Name + ")")
         Try
             If Not WC.IsBusy Then '이미 바쁠때 (사용중일때) 가 아닐 때에만
                 WC.ResumeAsync()
@@ -651,7 +661,6 @@ Public Class ItemPanel
         Catch ex As Exception
 
             'MsgBox("오류 발생:" + vbCr + ex.Message, vbCritical)
-
             LogForm.addLog("비디오인포 수집 중 오류 발생. (" + Me.Name + ")")
         End Try
 
