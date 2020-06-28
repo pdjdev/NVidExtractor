@@ -524,7 +524,7 @@ Partial Class Form1
         Me.Icon = Global.NVidExtractor.My.Resources.Resources.icon
         Me.MinimumSize = New System.Drawing.Size(556, 370)
         Me.Name = "Form1"
-        Me.Text = "네이버 비디오 추출기 1.0v"
+        Me.Text = "NVidExtractor 1.1v"
         Me.Panel1.ResumeLayout(False)
         Me.Panel1.PerformLayout()
         Me.Panel7.ResumeLayout(False)
