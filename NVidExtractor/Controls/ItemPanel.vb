@@ -98,7 +98,7 @@ Public Class ItemPanel
 
     Public Sub setMode()
         '카카오면 무조건 다운모드 1
-        If videoSiteType = "kakao" Then DownMode = 1
+        If videoSiteType = "kakao" Or videoSiteType = "pandora" Then DownMode = 1
 
         Select Case DownMode
             Case 1
@@ -106,6 +106,8 @@ Public Class ItemPanel
                 ComboBox2.Enabled = False
                 If videoSiteType = "kakao" Then
                     DownModeLabel.Text = "영상(카카오)"
+                ElseIf videoSiteType = "pandora" Then
+                    DownModeLabel.Text = "영상(판도라)"
                 Else
                     DownModeLabel.Text = "영상"
                 End If
@@ -580,7 +582,6 @@ Public Class ItemPanel
                     End If
 
 
-
                     'HIGH4(1080p) HIGH(720p) MAIN(360p+) BASE(360p) LOW(240p)
                     Dim baselink As String = "https://tv.kakao.com/katz/v1/ft/cliplink/" + vidkey _
                                              + "/readyNplay?player=monet_html5&uuid=&profile="
@@ -654,6 +655,70 @@ Public Class ItemPanel
                     count = tmp1.SelectToken("clip").SelectToken("playCount").ToString '조회수
                     coverURL = tmp1.SelectToken("clip").SelectToken("thumbnailUrl").ToString '동영상 썸네일
 
+                Case "pandora"
+
+                    Dim source As String = webget(OriginalURL)
+
+                    Dim strChUserId As String = getJSValue(source, "c_userid")
+                    Dim prgid As String = getJSValue(source, "c_prgid")
+                    Dim strFid As String = getJSValue(source, "strFid")
+                    Dim char1 As String = Mid(strChUserId, 1, 1)
+                    Dim char2 As String = Mid(strChUserId, 2, 1)
+
+                    Dim url As String = "http://trans-idx.cdn.pandora.tv/flvchmt.pandora.tv/[quality]/_user/" + char1 + "/" + char2 + "/" + strChUserId _
+                                        + "/" + Mid(prgid, prgid.Length - 1) + "/" + strFid _
+                                        + ".flv?key1=&key2=&ft=FC&class=normal&country=KR&pcode2=0&px-bps=0&px-bufahead=3&cms=1&rand=0&px-time=0&px-hash="
+
+                    Dim nInfo As String = getJSValue(source, "nInfo")
+                    Dim runtime As Integer = Math.Round(Convert.ToInt32(getJSValue(source, "runtime")) / 1000, 0)
+
+                    If nInfo.Contains("1080") Then
+                        videoName.Add("1080p")
+                        videoURL.Add(url.Replace("[quality]", "fhd"))
+                        videoSize.Add(0)
+                        videoLength.Add(runtime)
+                    End If
+
+                    If nInfo.Contains("720") Then
+                        videoName.Add("720p")
+                        videoURL.Add(url.Replace("[quality]", "hd"))
+                        videoSize.Add(0)
+                        videoLength.Add(runtime)
+                    End If
+
+                    If nInfo.Contains("480") Then
+                        videoName.Add("480p")
+                        videoURL.Add(url.Replace("[quality]", "sd"))
+                        videoSize.Add(0)
+                        videoLength.Add(runtime)
+                    End If
+
+                    If nInfo.Contains("336") Then
+                        videoName.Add("336p")
+                        videoURL.Add(url.Replace("[quality]", "flv"))
+                        videoSize.Add(0)
+                        videoLength.Add(runtime)
+                    End If
+
+                    If nInfo.Contains("240") Then
+                        videoName.Add("240p")
+                        videoURL.Add(url.Replace("[quality]", "vld"))
+                        videoSize.Add(0)
+                        videoLength.Add(runtime)
+                    End If
+
+                    postURL = "http://www.pandora.tv" + getJSValue(source, "currUrl") '원영상 포스트 링크
+                    user_name = getJSValue(source, "strChUserNick") '유저명
+                    user_id = getJSValue(source, "strChUserId") '유저ID
+                    subject = getJSValue(source, "strLocalTitle") '동영상 제목
+
+                    If source.Contains("<span id=""prgViewCount"">") Then
+                        count = midReturn(source, "<span id=""prgViewCount"">", "</span>") '조회수
+                    Else
+                        count = "?" '조회수
+                    End If
+
+                    coverURL = getJSValue(source, "strThumbnail") '동영상 썸네일
             End Select
 
 

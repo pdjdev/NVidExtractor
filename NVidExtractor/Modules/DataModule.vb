@@ -41,6 +41,26 @@ ret:
         Return sourcestr
     End Function
 
+    Function getJSValue(source As String, key As String)
+        Dim tmp As String = midReturn(source, "var " + key, ";") + ";"
+
+        If tmp.Contains("= '") Then
+            tmp = midReturn(tmp, "= '", "';")
+        ElseIf tmp.Contains("= """) Then
+            tmp = midReturn(tmp, "= """, """;")
+        ElseIf tmp.Contains("= [") Then
+            tmp = midReturn(tmp, "= [", "];")
+        ElseIf tmp.Contains("= false;") Then
+            Return False
+        ElseIf tmp.Contains("= true;") Then
+            Return True
+        Else
+            tmp = tmp.Replace("'", "").Replace(" ", "")
+        End If
+
+        Return tmp
+    End Function
+
     Public Function ChkURL(url As String)
         Dim request As HttpWebRequest
         Dim response As HttpWebResponse
@@ -71,6 +91,14 @@ ret:
             Else 'https://tv.kakao.com/channel/2667441/cliplink/300367536 이런 식일 경우
                 vidkey = midReturn(url, "/cliplink/", "?end")
             End If
+        ElseIf OriginalURL.Contains("pandora.tv") Or OriginalURL.Contains("pan.best") Then
+            'http://www.pandora.tv/view/0ywzxg74a1w7/60352353/#38709004_new
+            Try
+                Dim source As String = webget(OriginalURL)
+                vidkey = getJSValue(source, "c_prgid")
+            Catch ex As Exception
+
+            End Try
         Else
             Dim url As String = OriginalURL
 

@@ -8,6 +8,7 @@ Public Class Form1
     Public downStarted = False
 
     Dim downWarnShowed As Boolean = False
+    Dim pandoraWarnShowed As Boolean = False
 
     Public saveLocation As String = Application.ExecutablePath.Substring(0, Application.ExecutablePath.LastIndexOf("\"))
 
@@ -35,6 +36,17 @@ Public Class Form1
             '카카오는 영상밖에 없으므로
             itemPanel.DownMode = 1
             itemPanel.videoSiteType = "kakao"
+        ElseIf link.Contains("pandora.tv") Or link.Contains("pan.best") Then
+            itemPanel.DownMode = 1
+            itemPanel.videoSiteType = "pandora"
+
+            '판도라 경고 띄우기
+            If Not pandoraWarnShowed Then
+                MsgBox("판도라 영상을 추가하였습니다." + vbCr + vbCr _
+                       + "판도라TV의 경우 추출은 가능하지만 다소 불안정적인 다운로드 속도를 보이고 있습니다. 그렇기 때문에 동시 다운로드가 불가능하며, 다운로드 도중 멈춤이 있을 수 있습니다." + vbCr + vbCr _
+                       + "불안정한 상태가 지속된다면 비디오를 추가하신 뒤 메뉴 버튼(...) > 스트리밍 링크 추출을 클릭하여 브라우저 등에서 다운로드 받아 보시기 바랍니다.", vbInformation)
+                pandoraWarnShowed = True
+            End If
         Else
             itemPanel.DownMode = ModeCB.SelectedIndex + 1
             itemPanel.videoSiteType = "naver"
@@ -269,11 +281,16 @@ Public Class Form1
     Private Sub DownCheckTimer_Tick(sender As Object, e As EventArgs) Handles DownCheckTimer.Tick
         Dim busycount = 0
         Dim unfinished = 0
+        '판도라는 한번에 하나밖에 못받도록 해야함 (여러개 받으면 속도 매우 저하됨)
+        Dim pandora_busy = 0
 
         For Each ctrl As ItemPanel In ListPanel.Controls
             '시작은 했는데 끝을 못본 놈이 있으면 (그리고 오류도 아님)
             If ctrl.WC.IsBusy Or (ctrl.DownBegan And Not ctrl.DownFinished And Not ctrl.progMode = "error") Then
                 busycount += 1
+                If ctrl.videoSiteType = "pandora" Then
+                    pandora_busy += 1
+                End If
             End If
 
             If Not ctrl.DownFinished Then
@@ -293,6 +310,11 @@ Public Class Form1
 
                 ElseIf Not ctrl.DownBegan And ctrl.vidOK Then '다운을 시작안했고 비디오가 괜찮으면
                     'ctrl.StartDownload()
+
+                    '대상 비디오가 판도라인데 현재 판도라가 한놈이라도 돌아가면
+                    If ctrl.videoSiteType = "pandora" And pandora_busy > 0 Then
+                        Continue For
+                    End If
 
                     '그냥 다운로드를 시작하면 무조건 비디오info 다시 조회하고 받도록 하기
                     ctrl.VideoInfoReset()
