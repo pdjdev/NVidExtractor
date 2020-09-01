@@ -1,6 +1,8 @@
 # NVidExtractor
 ![banner](info_banner.png)
 
+[최신 버전 다운로드 (1.110v)](https://github.com/pdjdev/NVidExtractor/releases/download/1.110v/NVidExtractor_1110.zip)
+
 ## 소개
 NVidExtractor는 네이버 블로그에 업로드된 비디오를 백업하거나 플랫폼을 이주하기 위해 편리하게 백업할 수 있는 유틸리티입니다.
 
