@@ -449,7 +449,7 @@ Partial Class Form1
         Me.DownCountUD.Name = "DownCountUD"
         Me.DownCountUD.Size = New System.Drawing.Size(37, 23)
         Me.DownCountUD.TabIndex = 13
-        Me.DownCountUD.Value = New Decimal(New Integer() {3, 0, 0, 0})
+        Me.DownCountUD.Value = New Decimal(New Integer() {2, 0, 0, 0})
         '
         'Label1
         '

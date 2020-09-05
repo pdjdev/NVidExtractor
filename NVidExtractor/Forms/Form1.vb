@@ -339,9 +339,9 @@ Public Class Form1
     End Sub
 
     Private Sub DownCountUD_ValueChanged(sender As Object, e As EventArgs) Handles DownCountUD.ValueChanged
-        If DownCountUD.Value > 4 And Not downWarnShowed Then
+        If DownCountUD.Value > 2 And Not downWarnShowed Then
             If MsgBox("동시 다운로드 수가 높으면 속도가 저하되거나 서버로부터 접속이 제한되어 동영상이 제대로 다운로드 되지 않을 수 있습니다." + vbCr + vbCr + "그래도 계속하시겠습니까?", vbExclamation + vbYesNo) = vbNo Then
-                DownCountUD.Value = 4
+                DownCountUD.Value = 2
             Else
                 downWarnShowed = True
             End If
