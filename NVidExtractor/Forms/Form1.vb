@@ -220,8 +220,11 @@ Public Class Form1
 
             For Each n As String In killlist
                 LogForm.addLog("완료 다운로드 삭제 (" + n + ")")
-                ListPanel.Controls.RemoveByKey(n)
+                'ListPanel.Controls.RemoveByKey(n)
+                ListPanel.Controls.Find(n, False).First().Dispose()
             Next
+
+            GC.Collect()
         End If
 
         CheckAndShowTip()
@@ -241,8 +244,11 @@ Public Class Form1
 
             For Each n As String In killlist
                 LogForm.addLog("일괄 다운로드 삭제 (" + n + ")")
-                ListPanel.Controls.RemoveByKey(n)
+                'ListPanel.Controls.RemoveByKey(n)
+                ListPanel.Controls.Find(n, False).First().Dispose()
             Next
+
+            GC.Collect()
         End If
 
         CheckAndShowTip()
@@ -266,7 +272,9 @@ Public Class Form1
 #End Region
 
     Private Sub ctrl_RemoveClicked(sender As Object, e As EventArgs)
-        ListPanel.Controls.Remove(DirectCast(sender, Control))
+        DirectCast(sender, Control).Dispose()
+        GC.Collect()
+
         CheckAndShowTip()
     End Sub
 
